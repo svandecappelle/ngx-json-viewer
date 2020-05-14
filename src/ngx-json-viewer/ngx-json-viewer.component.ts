@@ -1,4 +1,4 @@
-import { Component, OnChanges, Input } from '@angular/core';
+import { Component, OnChanges, Input, Output, EventEmitter } from '@angular/core';
 
 export interface Segment {
   key: string;
@@ -7,6 +7,8 @@ export interface Segment {
   description: string;
   expanded: boolean;
 }
+
+const urlRegexp: any = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
 
 @Component({
   selector: 'ngx-json-viewer',
@@ -17,6 +19,11 @@ export class NgxJsonViewerComponent implements OnChanges {
 
   @Input() json: any;
   @Input() expanded = true;
+  @Input() followLinks = true;
+  @Input() linksLabel = true;
+
+  @Output() valueClicked = new EventEmitter<{event: Event, segment: Segment}>();
+
   /**
    * @deprecated It will be always true and deleted in version 3.0.0
    */
@@ -73,6 +80,16 @@ export class NgxJsonViewerComponent implements OnChanges {
       case 'string': {
         segment.type = 'string';
         segment.description = '"' + segment.value + '"';
+
+        if (this.followLinks &&  urlRegexp.test(segment.value)) {
+          const label = this.linksLabel && this.linksLabel[segment.value] ? this.linksLabel[segment.value] : segment.value;
+          segment.type = 'url';
+          segment.description = label;
+        } else {
+          segment.type = 'string';
+          segment.description = '"' + segment.value + '"';
+        }
+
         break;
       }
       case 'undefined': {
@@ -99,5 +116,10 @@ export class NgxJsonViewerComponent implements OnChanges {
     }
 
     return segment;
+  }
+
+  onSegmentClick(event: Event, segment: Segment): void {
+    console.log(this.valueClicked, {event, segment});
+    this.valueClicked.emit({event, segment});
   }
 }

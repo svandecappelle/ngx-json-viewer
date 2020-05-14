@@ -12,7 +12,20 @@
       <div *ngIf="isExpandable(segment)" class="toggler"></div>
       <span class="segment-key">{{ segment.key }}</span>
       <span class="segment-separator">: </span>
-      <span *ngIf="!segment.expanded || !isExpandable(segment)" class="segment-value">{{ segment.description }}</span>
+
+      <span *ngIf="segment.type !== 'url' && (!segment.expanded || !isExpandable(segment))"
+            (click)="onSegmentClick($event, segment)"
+            class="segment-value">
+            {{ segment.description }}
+      </span>
+      <a *ngIf="segment.type === 'url' && (!segment.expanded || !isExpandable(segment))"
+          href="{{segment.value}}"
+          (click)="onSegmentClick($event, segment)"
+          target="_blank"
+          class="segment-value">
+          {{ segment.description }}
+      </a>
+
     </section>
     <section *ngIf="segment.expanded && isExpandable(segment)" class="children">
       <ngx-json-viewer [json]="segment.value" [expanded]="expanded"></ngx-json-viewer>
